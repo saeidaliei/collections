@@ -1,0 +1,45 @@
+#!/usr/bin/env python
+
+from utils.land import load_data, get_index
+from utils.path import dfs_iterative, dfs_recursive
+from utils.path import dldfs, iddldfs
+import numpy as np
+
+mapfile = "gl-latlong-1km-landcover.bsq"
+
+test_grid = np.array([[1, 1, 0, 0, 1, 1, 1, 1, 0, 1],
+                      [0, 1, 1, 1, 0, 1, 0, 1, 1, 0],
+                      [1, 1, 0, 0, 1, 1, 1, 1, 0, 1],
+                      [1, 0, 0, 0, 1, 1, 0, 1, 1, 1],
+                      [1, 1, 0, 0, 0, 1, 1, 1, 0, 0]])
+
+source = (1, 7)
+target = (2, 5)
+
+src_lat = 48
+src_lon = 9
+tar_lat = 50
+tar_lat = 10
+# source = get_index(src_lat, src_lon)
+# target = get_index(tar_lat, tar_lon)
+
+if __name__ == "__main__":
+
+    mapdata = load_data(mapfile, lazyload=False)
+
+    grid = test_grid
+    # mapdata[mapdata > 1] = 1
+    # grid = mapdata
+    
+    visited, result = dfs_iterative(grid, source, target)
+    # visited, result = dfs_recursive(grid, source, target)
+    # visited, result = dldfs(grid, source, target)
+    # visited, result = iddldfs(grid, source, target)
+
+    if result:
+        print("Path exists.")
+        print("Nodes:")
+        print(visited)
+    else:
+        print("Path does not exists.")
+
