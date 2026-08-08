@@ -1,0 +1,11 @@
+---
+- name: Verify
+  hosts: all
+  remote_user: root
+  become: true
+  tasks:
+    - name: Check Tfpd version
+      ansible.builtin.command:
+        cmd: in.tftpd --version
+      register: result
+      changed_when: result is not succeeded

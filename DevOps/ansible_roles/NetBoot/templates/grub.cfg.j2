@@ -1,0 +1,32 @@
+function load_video {
+        insmod efi_gop
+        insmod efi_uga
+        insmod video_bochs
+        insmod video_cirrus
+        insmod all_video
+}
+
+load_video
+set gfxpayload=keep
+insmod gzio
+
+menuentry 'Exit this grub' {
+        exit
+}
+
+menuentry 'Boot from local disk' {
+        insmod chain
+        search --set=root --file /EFI/fedora/grubx64.efi
+        chainloader /EFI/fedora/grubx64.efi
+}
+
+menuentry 'Install Fedora 64-bit'  --class fedora --class gnu-linux --class gnu --class os {
+        linux {{ distro_name }}/vmlinuz inst.repo=nfs:{{ nfsserver_ip }}:{{ nfsserver_directory }}/{{ distro_name }}/ ip=dhcp inst.ks=http://{{ webserver_ip }}/kickstarts/fedora-disk-minimal.ks
+        initrd {{ distro_name }}/initrd.img
+}
+
+menuentry 'Install Fedora 38 Server'  --class fedora --class gnu-linux --class gnu --class os {
+        linux {{ distro_name }}/vmlinuz inst.repo=nfs:{{ nfsserver_ip }}:{{ nfsserver_directory }}/{{ distro_name }}/ ip=dhcp inst.ks=http://{{ webserver_ip }}/kickstarts/fedora-disk-minimal.ks
+        initrd {{ distro_name }}/initrd.img
+}
+

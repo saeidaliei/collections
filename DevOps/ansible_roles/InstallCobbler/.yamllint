@@ -1,0 +1,38 @@
+---
+extends: default
+
+rules:
+  braces:
+    max-spaces-inside: 1
+    level: warning
+  brackets:
+    max-spaces-inside: 1
+    level: warning
+  colons:
+    max-spaces-after: 1
+  comments: disable
+  comments-indentation: disable
+  empty-lines:
+    max: 1
+    level: warning
+  hyphens:
+    level: warning
+  indentation:
+    spaces: 2
+    indent-sequences: consistent
+  line-length: disable
+  new-lines:
+    type: unix
+  trailing-spaces: disable
+  quoted-strings: disable
+  truthy:
+    allowed-values: ["true", "false"]
+  octal-values:
+    forbid-implicit-octal: true
+    forbid-explicit-octal: true
+    level: error
+  document-start:
+    present: true
+  key-duplicates: enable
+
+ignore-from-file: .gitignore

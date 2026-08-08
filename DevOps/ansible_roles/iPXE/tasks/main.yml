@@ -1,0 +1,27 @@
+---
+- name: Create iPXE directory
+  ansible.builtin.file:
+    path: "{{ ipxe_directory  }}"
+    state: directory
+
+- name: Download iPXE firmwares to Tftp directory
+  ansible.builtin.get_url:
+    url: "{{ item }}"
+    dest: "{{ ipxe_directory }}"
+  loop:
+    - "http://boot.ipxe.org/ipxe.efi"
+    - "http://boot.ipxe.org/undionly.kpxe"
+
+- name: Make sure webserver directory exists
+  ansible.builtin.file:
+    path: "{{ webserver_directory }}"
+    state: directory
+
+- name: Copy initial iPXE script to Http directory
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: "{{ webserver_directory }}"
+    mode: "644"
+  loop:
+    - init.ipxe
+    - script.ipxe

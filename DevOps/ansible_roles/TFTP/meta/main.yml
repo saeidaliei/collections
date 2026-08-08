@@ -1,0 +1,17 @@
+---
+galaxy_info:
+  author: Saeid Aliei
+  description: Install a Tftp server
+  company: Area Science Park
+  role_name: tftp
+  namespace: orfeo
+  license: GPL-3.0-or-later
+  min_ansible_version: "2.1"
+  platforms:
+    - name: Fedora
+      versions:
+        - all
+  galaxy_tags:
+    - tftp
+    - pxeboot
+dependencies: []

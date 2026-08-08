@@ -1,0 +1,14 @@
+---
+- name: Restart rpcbind service
+  ansible.builtin.systemd:
+    name: rpcbind
+    state: restarted
+    enabled: true
+  listen: "Restart NFS server"
+
+- name: Restart NFS service
+  ansible.builtin.systemd:
+    name: nfs-server
+    state: restarted
+    enabled: true
+  listen: "Restart NFS server"

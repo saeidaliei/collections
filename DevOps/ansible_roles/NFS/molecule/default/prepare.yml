@@ -1,0 +1,43 @@
+---
+- name: Prepare
+  hosts: all
+  tasks:
+    - name: Put SELinux in permissive mode
+      ansible.posix.selinux:
+        policy: targeted
+        state: permissive
+
+    - name: Stop iptables, firewalld, and ufw services
+      ansible.builtin.service:
+        name: "{{ item }}"
+        state: stopped
+        enabled: false
+      loop:
+        - iptables
+        - firewalld
+        - ufw
+      changed_when: false
+      failed_when: false
+
+      # see: https://github.com/vagrant-libvirt/vagrant-libvirt/issues/867
+    - name: Install NetworkManager-initscripts-ifcfg-rh
+      ansible.builtin.package:
+        name: NetworkManager-initscripts-ifcfg-rh
+        state: latest
+
+    - name: Delete Wired connection 2 
+      community.general.nmcli:
+        conn_name: "Wired connection 2"
+        state: absent
+
+    - name: Restart NetworkManager service
+      ansible.builtin.service:
+        name: NetworkManager
+        state: restarted
+        enabled: true
+
+    - name: Restart NetworkManager-wait-online service
+      ansible.builtin.service:
+        name: NetworkManager-wait-online
+        state: restarted
+        enabled: true

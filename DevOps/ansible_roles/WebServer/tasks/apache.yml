@@ -1,0 +1,18 @@
+---
+- name: Create server directory
+  ansible.builtin.file:
+    path: "{{ webserver_directory }}"
+    state: directory
+
+- name: Install Apache package
+  ansible.builtin.package:
+    name: "{{ apache_package_name }}"
+    state: latest
+
+- name: Configure apache
+  ansible.builtin.template:
+    src: templates/httpd.conf.j2
+    dest: /etc/httpd/conf/httpd.conf
+    mode: "0644"
+  notify: Reload and restart apache
+

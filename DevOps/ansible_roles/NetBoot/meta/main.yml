@@ -1,0 +1,27 @@
+---
+galaxy_info:
+  author: Saeid Aliei
+  description: Prepare a network boot environment
+  company: Area Science Park
+  role_name: netboot
+  namespace: orfeo
+  license: GPL-3.0-or-later
+  min_ansible_version: "2.1"
+  platforms:
+    - name: Fedora
+      versions:
+        - all
+  galaxy_tags:
+    - netboot
+    - pxeboot
+dependencies:
+  - role: orfeo.dhcp
+    dhcpd_is_pxe: true
+    dhcpd_next_server: "192.168.132.75"
+  - role: orfeo.tftp
+    tftpd_directory: "/tftpboot"
+  - role: orfeo.webserver
+    apache_or_nginx: "apache"
+    webserver_directory: "/var/www"
+  - role: orfeo.nfs
+    nfsserver_directory: "/nfsshare"

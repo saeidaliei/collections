@@ -1,0 +1,43 @@
+---
+- name: Prepare
+  hosts: webservers
+  tasks:
+    - name: setenforce 0
+      ansible.builtin.raw: |
+        set -eu
+        setenforce 0
+        sed -i 's/^SELINUX=.*$/SELINUX=permissive/g' /etc/selinux/config
+      args:
+        executable: "/bin/bash"
+      changed_when: false
+      failed_when: false
+
+    - name: systemctl stop iptables.service
+      ansible.builtin.raw: |
+        set -eu
+        systemctl stop iptables.service
+        systemctl disable iptables.service
+      args:
+        executable: "/bin/bash"
+      changed_when: false
+      failed_when: false
+
+    - name: systemctl stop firewalld.service
+      ansible.builtin.raw: |
+        set -eu
+        systemctl stop firewalld.service
+        systemctl disable firewalld.service
+      args:
+        executable: "/bin/bash"
+      changed_when: false
+      failed_when: false
+
+    - name: systemctl stop ufw.service
+      ansible.builtin.raw: |
+        set -eu
+        systemctl stop ufw.service
+        systemctl disable ufw.service
+      args:
+        executable: "/bin/bash"
+      changed_when: false
+      failed_when: false

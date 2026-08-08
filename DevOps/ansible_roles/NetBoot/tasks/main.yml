@@ -1,0 +1,118 @@
+---
+- name: Install syslinux package
+  ansible.builtin.package:
+    name: syslinux
+    state: latest
+
+- name: Copy bootloader files to Tftp boot directory
+  ansible.builtin.copy:
+    src: "/usr/share/syslinux/{{ item }}"
+    dest: "{{ tftpd_directory }}"
+    mode: u+rw,g+r,o+r
+    remote_src: true
+  loop:
+    - pxelinux.0
+    - menu.c32
+    - vesamenu.c32
+    - ldlinux.c32
+    - libcom32.c32
+    - libutil.c32
+
+- name: Install shim-x64 and grub2-efi-x64 packages
+  ansible.builtin.yum:
+    name: "{{ item }}"
+    state: latest
+    installroot: "/tmp/{{ distro_name }}"
+    releasever: 38
+  when: ansible_facts['os_family'] == "RedHat"
+  loop:
+    - shim-x64
+    - grub2-efi-x64
+
+- name: Create kernel, uefi and pxelinux.cfg directory in Tftp boot directory
+  ansible.builtin.file:
+    path: "{{ tftpd_directory }}/{{ item }}"
+    state: directory
+    mode: u+rwx,g+rx,o+rx
+  loop:
+    - uefi
+    - pxelinux.cfg
+    - "{{ distro_name }}"
+
+- name: Copy EFI bootloader files to uefi Tftp boot directory
+  ansible.builtin.copy:
+    src: "/tmp/{{ distro_name }}/boot/efi/EFI/fedora/{{ item }}" # TODO: remove hardcoded fedora literal
+    dest: "{{ tftpd_directory }}/uefi"
+    mode: u+rwx,g+r,o+r
+    remote_src: true
+  loop:
+    - shimx64.efi
+    - grubx64.efi
+
+- name: Copy boot menu for BIOS clients
+  ansible.builtin.template:
+    src: templates/default.j2
+    dest: "{{ tftpd_directory }}/pxelinux.cfg/default"
+    mode: u+rw,g+r,o+r
+
+- name: Copy boot menu for UEFI clients
+  ansible.builtin.template:
+    src: templates/grub.cfg.j2
+    dest: "{{ tftpd_directory }}/uefi/grub.cfg"
+    mode: u+rw,g+r,o+r
+
+- name: Create ISO directory
+  ansible.builtin.file:
+    path: /var/iso
+    state: directory
+
+- name: Download ISO image
+  ansible.builtin.get_url:
+    url: "{{ iso_url }}"
+    checksum: "{{ iso_checksum }}"
+    dest: /var/iso
+  when: local_iso|default(false)|bool == false
+
+- name: Copy ISO image
+  ansible.builtin.copy:
+    src: "{{ iso_file }}"
+    dest: /var/iso
+  when: local_iso|default(false)|bool == true
+
+- name: Mount ISO image
+  ansible.builtin.mount:
+    src: "/var/iso/{{ iso_file }}"
+    path: /mnt
+    fstype: iso9660
+    opts: ro,loop
+    state: mounted
+
+- name: Ensure subdirectory exists in NFS server directory
+  ansible.builtin.file:
+    path: "{{ nfsserver_directory }}/{{ distro_name }}"
+    state: directory
+
+- name: Copy ISO image to NFS server subdirectory
+  ansible.builtin.copy:
+    src: /mnt/
+    dest: "{{ nfsserver_directory }}/{{ distro_name }}"
+    remote_src: true
+
+- name: Copy kernel and initial ramdisk
+  ansible.builtin.copy:
+    src: "{{ nfsserver_directory }}/{{ distro_name }}/images/pxeboot/{{ item }}"
+    dest: "{{ tftpd_directory }}/{{ distro_name }}"
+    remote_src: true
+  loop:
+    - vmlinuz
+    - initrd.img
+
+- name: Create kickstarts directory
+  ansible.builtin.file:
+    path: "{{ webserver_directory }}/kickstarts"
+    state: directory
+
+- name: Copy kickstarts
+  ansible.builtin.copy:
+    src: kickstarts/fedora-disk-minimal.ks
+    dest: "{{ webserver_directory }}/kickstarts"

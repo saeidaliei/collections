@@ -1,0 +1,19 @@
+# swap files
+*.swp
+
+# builds dir
+builds/
+
+# local backup files
+*.bak.?
+
+# vagrant management 
+.vagrant/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# iso files
+*.iso

@@ -1,0 +1,22 @@
+DEFAULT vesamenu.c32
+PROMPT 1
+TIMEOUT 600
+ONTIMEOUT BootLocal
+
+LABEL BootLocal
+        localboot 0
+        TEXT HELP
+        Boot from local drive
+        ENDTEXT
+        MENU DEFAULT
+
+LABEL linux
+MENU LABEL ^Install Fedora 38 64-bit
+kernel {{ distro_name }}/vmlinuz
+append initrd={{distro_name}}/initrd.img inst.stage2=nfs:{{ nfsserver_ip }}:{{ nfsserver_directory }}/{{ distro_name }}/ ip=dhcp
+
+LABEL server
+MENU LABEL ^Install Fedora 38 (Minimal Image)
+kernel {{ distro_name }}/vmlinuz
+append initrd={{ distro_name }}/initrd.img inst.stage2=nfs:{{ nfsserver_ip }}:{{ nfsserver_directory }}/{{ distro_name }}/ ip=dhcp inst.ks=http://{{ webserver_ip }}/kickstarts/fedora-disk-minimal.ks
+

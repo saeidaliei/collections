@@ -1,0 +1,14 @@
+---
+- name: Reload and restart nginx
+  ansible.builtin.systemd_service:
+    name: "{{ nginx_service_name }}"
+    state: restarted
+    enabled: true
+    daemon_reload: true
+
+- name: Reload and restart apache
+  ansible.builtin.service:
+    name: "{{ apache_service_name }}"
+    state: restarted
+    enabled: true
+    daemon_reload: true

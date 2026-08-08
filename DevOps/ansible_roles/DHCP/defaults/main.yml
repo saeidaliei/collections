@@ -1,0 +1,7 @@
+---
+dhcpd_subnet: "192.168.132.0"
+dhcpd_netmask: "255.255.255.0"
+dhcpd_range: "192.168.132.10 192.168.132.90"
+dhcpd_next_server: "192.168.132.72"
+dhcpd_routers: "192.168.132.1"
+dhcpd_is_pxe: true

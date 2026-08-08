@@ -1,0 +1,11 @@
+---
+- name: Verify
+  hosts: all
+  remote_user: root
+  become: true
+  tasks:
+    - name: nginx --version
+      ansible.builtin.command:
+        cmd: nginx --version
+      register: result
+      changed_when: result is not succeeded

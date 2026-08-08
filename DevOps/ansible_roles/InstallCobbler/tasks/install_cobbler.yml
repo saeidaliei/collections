@@ -1,0 +1,67 @@
+---
+- name: Install Cobbler package suite
+  ansible.builtin.package:
+    name: "{{ item }}"
+    state: latest
+  when: ansible_facts['os_family'] == "RedHat"
+  loop:
+    - cobbler
+    - syslinux
+    - tftp-server
+    - dhcp-server
+    - fence-agents
+    - rsync-daemon
+    - dnf-plugins-core
+    - yum-utils
+    - debmirror
+    - pykickstart
+    - bind-utils
+    - bind
+
+- name: Copy cobbler template files
+  ansible.builtin.template:
+    src: "{{ item }}"
+    dest: "/etc/cobbler/{{ item.split('.') | first | basename }}.template"
+  with_fileglob:
+    - "templates/*.template.j2"
+
+- name: Copy cobbler settings
+  ansible.builtin.template:
+    src: templates/settings.yaml.j2
+    dest: /etc/cobbler/settings.yaml
+    backup: true
+  notify: 
+    - Restart cobblerd
+
+- name: Copy distro signatures
+  ansible.builtin.copy:
+    src: distro_signatures.json
+    dest: /var/lib/cobbler/distro_signatures.json
+    mode: "0644"
+
+- name: Restart cobblerd
+  ansible.builtin.systemd_service:
+    name: cobblerd
+    state: restarted
+    enabled: true
+
+- name: Install bootloaders
+  ansible.builtin.package:
+    name: "{{ item }}"
+    state: latest
+  when: ansible_facts['os_family'] == "RedHat"
+  loop:
+    - grub2-efi-modules
+    - grub2-efi-x64.x86_64
+    - grub2-efi-x64-cdboot.x86_64
+    - grub2-efi-x64-modules
+    - grub2-efi-aa64-modules
+    - grub2-ppc64le-modules
+    - grub2-efi-ia32.x86_64
+    - grub2-efi-ia32-cdboot.x86_64
+    - grub2-efi-ia32-modules
+    - ipxe-bootimgs-x86
+    - ipxe-bootimgs-aarch64
+
+- name: Cobbler make bootloaders
+  ansible.builtin.command: /usr/bin/cobbler mkloaders

@@ -1,0 +1,16 @@
+---
+- name: Install nfs-utils package
+  ansible.builtin.package:
+    name: nfs-utils
+    state: latest
+
+- name: Create share directory
+  ansible.builtin.file:
+    path: "{{ nfsserver_directory }}"
+    state: directory
+
+- name: Copy NFS exports file
+  ansible.builtin.template:
+    src: templates/exports.j2
+    dest: /etc/exports
+  notify: "Restart NFS server"

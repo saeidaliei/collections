@@ -1,0 +1,7 @@
+---
+profile: production
+verbosity: 1
+offline: true
+exclude_paths:
+  - .vscode
+  - .github

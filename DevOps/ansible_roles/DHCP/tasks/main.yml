@@ -1,0 +1,11 @@
+---
+- name: Install DHCP server
+  ansible.builtin.package:
+    name: dhcp-server
+    state: latest
+
+- name: Configure DHCP server
+  ansible.builtin.template:
+    src: templates/dhcpd.conf.j2
+    dest: /etc/dhcp/dhcpd.conf
+  notify: Reload and restart dhcpd service

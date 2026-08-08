@@ -1,0 +1,36 @@
+---
+- name: Gather service facts
+  ansible.builtin.service_facts:
+  listen: "Restart services"
+
+- name: Restart and enable Nginx service
+  ansible.builtin.systemd_service:
+    name: nginx
+    state: restarted
+    enabled: true
+    daemon_reload: true
+  when: "apache_or_nginx == 'nginx'"
+  listen: "Restart services"
+
+- name: Restart and enable Apache service
+  ansible.builtin.systemd_service:
+    name: httpd
+    state: restarted
+    daemon_reload: true
+    enabled: true
+  when: "apache_or_nginx == 'apache'"
+  listen: "Restart services"
+
+- name: Restart and enable various services
+  ansible.builtin.systemd_service:
+    name: "{{ item }}"
+    state: restarted
+    enabled: true
+    daemon_reload: true
+  loop:
+    - dhcpd
+    - tftp
+    - rpcbind
+    - nfs-server
+  listen: "Restart services"
+

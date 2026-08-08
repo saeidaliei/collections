@@ -1,0 +1,70 @@
+---
+dependency:
+  name: galaxy
+
+driver:
+  name: vagrant
+  provider:
+    name: libvirt
+    type: libvirt
+
+platforms:
+  - name: fedora-38-cobbler-server
+    box: fedora/38-cloud-base
+    box_version: "38.20230413.1"
+    memory: 2048
+    cpus: 2
+    provider_raw_config_args:
+      - "driver = 'kvm'"
+      - "uri = 'qemu:///system'"
+      - "cpu_mode = 'host-passthrough'"
+    instance_raw_config_args:
+      - "vm.box_check_update = false"
+      - "vm.network 'private_network', 
+    ip: '192.168.132.100', 
+    netmask: '255.255.255.0', 
+    libvirt__dhcp_enabled: false, 
+    libvirt__network_name: 'netboot'"
+    config_options:
+      ssh.keep_alive: true
+      ssh.remote_user: "vagrant"
+    groups:
+      - cobbler_servers
+
+provisioner:
+  name: ansible
+  log: true
+  privileged: true
+  connection_options:
+    ansible_ssh_user: vagrant
+    ansible_become: true
+    ansible_become_user: root
+  lint:
+    name: ansible-lint
+  inventory:
+    host_vars:
+      fedora-38-netboot-server:
+        cobbler_server_ip: "192.168.132.100"
+    group_vars:
+      cobbler_servers:
+        ansible_python_interpreter: "/usr/bin/python3"
+
+scenario:
+  name: default
+  test_sequence:
+    - dependency
+    - cleanup
+    - destroy
+    - syntax
+    - create
+    - prepare
+    - converge
+    - verify
+    - cleanup
+    - destroy
+
+verifier:
+  name: testinfra
+  options:
+    sudo: true
+    v: 1

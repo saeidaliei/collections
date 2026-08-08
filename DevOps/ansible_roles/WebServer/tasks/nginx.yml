@@ -1,0 +1,55 @@
+---
+- name: Create server directory
+  ansible.builtin.file:
+    path: "{{ webserver_directory }}"
+    state: directory
+
+- name: Install Nginx package
+  ansible.builtin.package:
+    name: "{{ nginx_package_name }}"
+    state: present
+
+- name: Add Nginx configuation file
+  ansible.builtin.copy:
+    src: nginx.conf
+    dest: /etc/nginx/nginx.conf
+    mode: "0644"
+  notify:
+    - Reload and restart nginx
+
+# strictly speaking sites-availabe and sites-enabled are
+# not installed by default by the nginx, but debian
+# based packages usually do to imitate the debian's
+# apache package behavior, nginx.conf should include
+# the files in the sites-enabled dir, and the configs
+# there themselves should be simlinked to the ones in
+# sites-available, this way it's easier to manage webistes.
+# TODO: move default server block conf to default.d directroy
+# for Red Hat family.
+- name: Add sites-available directory
+  ansible.builtin.file:
+    path: /etc/nginx/sites-available
+    state: directory
+    mode: "0755"
+
+- name: Add sites-enabled directory
+  ansible.builtin.file:
+    path: /etc/nginx/sites-enabled
+    state: directory
+    mode: "0755"
+
+- name: Configure default site
+  ansible.builtin.template:
+    src: templates/default.j2
+    dest: /etc/nginx/sites-available
+    mode: "0644"
+  notify:
+    - Reload and restart nginx
+
+- name: Enable default site
+  ansible.builtin.file:
+    src: /etc/nginx/sites-available/default
+    dest: /etc/nginx/sites-enabled/default
+    state: link
+  notify:
+    - Reload and restart nginx

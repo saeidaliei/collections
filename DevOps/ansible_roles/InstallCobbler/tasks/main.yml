@@ -1,0 +1,45 @@
+---
+# TODO: move service handling to handlers file
+- name: Populate services facts
+  ansible.builtin.service_facts:
+
+- name: Stop services
+  ansible.builtin.systemd_service:
+    name: "{{ item }}"
+    state: stopped
+    enabled: false
+  loop:
+    - tftp
+    - httpd
+    - "{{ 'dhcpd' if manage_dhcp else '' }}"
+    - "{{ 'named' if manage_dns else '' }}"
+    - "{{ 'rsyncd' if manage_rsync else '' }}"
+    - cobblerd
+  when: 
+    - ansible_facts.services[[item, '.service'] | join] is defined
+    - item != ''
+
+- name: Import cobbler install task
+  ansible.builtin.import_tasks: install_cobbler.yml
+
+- name: Override service files
+  ansible.builtin.copy:
+    src: "files/{{ item }}"
+    dest: "/etc/systemd/system/{{ item }}"
+  loop:
+    - dhcpd.service.d/
+    - named.service.d/
+
+- name: Ensure services are running
+  ansible.builtin.systemd_service:
+    name: "{{ item }}"
+    state: started
+    enabled: true
+    daemon_reload: true
+  loop:
+    - httpd
+    - tftp
+    - named
+    - dhcpd
+    - rsyncd
+    - cobblerd

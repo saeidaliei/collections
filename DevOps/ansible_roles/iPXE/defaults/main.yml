@@ -1,0 +1,4 @@
+---
+tftpd_directory: "/tftpboot"
+ipxe_directory: "{{ tftpd_directory }}/ipxe"
+webserver_directory: "/var/www"

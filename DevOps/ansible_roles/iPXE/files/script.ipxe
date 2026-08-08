@@ -1,0 +1,5 @@
+#!ipxe
+kernel http://192.168.132.75/fedora/vmlinuz
+initrd http://192.168.132.75/fedora/initrd.img
+imgargs vmlinuz initrd=initrd rootfstype=nfs netboot=nfs nfsroot=192.168.132.75:/nfsshare/fedora splash ip=dhcp 
+boot

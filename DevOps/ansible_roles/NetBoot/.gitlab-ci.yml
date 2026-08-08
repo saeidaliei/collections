@@ -1,0 +1,138 @@
+---
+stages:
+  - build
+  - test
+  - deploy
+
+variables:
+  PYTHON_VERSION: "3.11"
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  PY_COLORS: '1'
+  ANSIBLE_FORCE_COLOR: '1'
+
+before_script:
+  - sudo dnf update -y
+
+.bootstrap-libvirt: &bootstrap-libvirt
+  - |
+    if ! command -v qemu-system-x86_64 &>/dev/null; then
+      sudo dnf install -y qemu-kvm
+    fi
+    if ! command -v virsh &>/dev/null; then
+      sudo dnf install -y install libvirt libvirt-devel
+    fi
+    if ! systemctl is-active libvirtd --quiet; then
+      sudo systemctl start libvirtd
+    fi
+    bash -c "qemu-system-x86_64 --version"
+    bash -c "virsh --version"
+
+.bootstrap-vagrant: &bootstrap-vagrant
+  - |
+    if ! command -v vagrant &>/dev/null; then
+      sudo dnf install -y vagrant
+    fi
+    if ! vagrant plugin list | grep -wq vagrant-libvirt &>/dev/null; then
+      vagrant plugin install vagrant-libvirt
+    fi
+    bash -c "vagrant --version"
+    bash -c "vagrant plugin list"
+
+.bootstrap-python: &bootstrap-python
+  - |
+    if ! command -v python3 &>/dev/null; then
+      sudo dnf install -y python3
+    fi
+    if ! command -v pip3 &>/dev/null; then
+      sudo dnf install -y python3-pip
+    fi
+    if ! command -v virtualenv &>/dev/null; then
+      sudo dnf install -y python3-virtualenv
+    fi
+    bash -c "python3 --version"
+    bash -c "pip3 --version"
+    bash -c "virtualenv --version"
+
+.bootstrap-pyvenv: &bootstrap-pyvenv
+  - virtualenv ${CI_PROJECT_DIR}/venv -p python${PYTHON_VERSION}
+
+.bootstrap-ansible: &bootstrap-ansible
+  - pip3 install ansible ansible-core
+
+.bootstrap-molecule: &bootstrap-molecule
+  - pip3 install molecule molecule-plugins molecule-vagrant libvirt-python pytest-testinfra docker
+
+.bootstrap-linters: &bootstrap-linters
+  - pip3 install ansible-lint yamllint flake8
+
+.source-pyvenv: &source-pyvenv
+  - source venv/bin/activate
+  - pip install --upgrade pip
+  - which python${PYTHON_VERSION}
+
+.linters: &linters
+  - flake8
+  - yamllint .
+  - ansible-lint
+
+.molecule-test: &molecule-test
+  - molecule test -s $_BOX-$_PROVIDER
+
+.job-lint: &job-lint
+  script:
+    - *linters
+
+.job-molecule-build: &job-molecule-build
+  script:
+    - *bootstrap-libvirt
+    - *bootstrap-vagrant
+    - *bootstrap-python
+    - *bootstrap-pyvenv
+    - *source-pyvenv
+    - *bootstrap-ansible
+    - *bootstrap-molecule
+    - *bootstrap-linters
+
+.job-molecule-test: &job-molecule-test
+  script:
+    - *source-pyvenv
+    - *molecule-test
+
+.job-galaxy-deploy: &job-galaxy-deploy
+  script:
+    - *source-pyvenv
+    - echo "this deploys the role"
+
+default:
+  retry: 0
+  tags: 
+    - shell-driver
+
+cache:
+  key: ${CI_COMMIT_REF_SLUG}-venv
+  paths:
+    - venv/
+
+build:fedora-38-libvirt:
+  stage: build
+  <<: *job-molecule-build
+  variables:
+    _BOX: "fedora-38"
+    _PROVIDER: "libvirt"
+
+test:fedora-38-libvirt:
+  stage: test
+  <<: *job-molecule-test
+  variables:
+    _BOX: "fedora-38"
+    _PROVIDER: "libvirt"
+  dependencies:
+    - build:fedora-38-libvirt
+  retry: 1
+
+deploy:ansible-galaxy:
+  stage: deploy
+  <<: *job-galaxy-deploy
+  needs:
+    - build:fedora-38-libvirt
+    - test:fedora-38-libvirt

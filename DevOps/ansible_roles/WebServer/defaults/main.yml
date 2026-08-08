@@ -1,0 +1,7 @@
+---
+apache_or_nginx: "apache" # nginx or apache
+nginx_package_name: "nginx"
+nginx_service_name: "nginx"
+apache_package_name: "httpd" # apache2 for Debain family
+apache_service_name: "httpd" # apache2 for Debian family
+webserver_directory: "/var/www"

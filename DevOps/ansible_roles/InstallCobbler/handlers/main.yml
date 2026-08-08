@@ -1,0 +1,8 @@
+---
+- name: Restart cobblerd
+  ansible.builtin.systemd_service:
+    name: cobblerd
+    state: restarted
+    enabled: true
+    daemon_reload: false
+

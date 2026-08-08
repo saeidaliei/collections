@@ -1,0 +1,4 @@
+---
+nfsserver_directory: "/nfsshare"
+nfsserver_clients: "*" # everyone, can specify a CIDR also, e.g. 192.168.132.0/24
+nfsserver_options: "async,no_root_squash,no_subtree_check,ro"

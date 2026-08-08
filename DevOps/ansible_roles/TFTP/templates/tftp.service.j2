@@ -1,0 +1,15 @@
+[Unit]
+Description=Tftp Server
+Requires=tftp.socket
+Documentation=man:in.tftpd
+
+[Service]
+{% if tftpd_address is defined and tftpd_address|length > 0 %}
+ExecStart=/usr/sbin/in.tftpd --address {{ tftpd_address }} {{ tftpd_options }} --secure {{ tftpd_directory }} 
+{% else %}
+ExecStart=/usr/sbin/in.tftpd {{ tftpd_options }} --secure {{ tftpd_directory }} 
+{% endif %}
+StandardInput=socket
+
+[Install]
+Also=tftp.socket

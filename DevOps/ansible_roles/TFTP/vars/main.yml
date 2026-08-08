@@ -1,0 +1,4 @@
+---
+tftpd_directory: "/tftpboot"
+tftpd_address: ""
+tftpd_options: "--create --permissive"

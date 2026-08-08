@@ -1,0 +1,10 @@
+---
+- name: Include Nginx installation task
+  ansible.builtin.include_tasks:
+    file: nginx.yml
+  when: apache_or_nginx == "nginx"
+
+- name: Include Apache installation task
+  ansible.builtin.include_tasks:
+    file: apache.yml
+  when: apache_or_nginx == "apache"

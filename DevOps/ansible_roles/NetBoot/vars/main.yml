@@ -1,0 +1,10 @@
+---
+ip: "192.168.132.75"
+nfsserver_ip: "{{ ip }}" # in principal these can be different, 
+tftpserver_ip: "{{ ip }}"  # here we assume every server is running with the same IP
+webserver_ip: "{{ ip }}"
+iso_url: "https://fedora.ip-connect.info/linux/releases/39/Server/x86_64/iso/Fedora-Server-dvd-x86_64-39-1.5.iso"
+iso_file: "Fedora-Server-dvd-x86_64-39-1.5.iso"
+iso_checksum: ""
+local_iso: false
+distro_name: "fedora38"

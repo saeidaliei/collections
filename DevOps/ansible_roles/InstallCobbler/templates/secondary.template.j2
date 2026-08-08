@@ -1,0 +1,40 @@
+acl servicenets { {{ named_servicenets }}; };
+
+options {
+          listen-on port 53 { localhost; servicenets; };
+          directory       "/var/named/";
+          dump-file       "data/cache_dump.db";
+          statistics-file "data/named_stats.txt";
+          memstatistics-file "data/named_mem_stats.txt";
+          allow-query     { localhost; servicenets; };
+          recursion yes;
+};
+
+# does not work on openSUSE Tumbleweed atm
+logging {
+        channel default_debug {
+                file "data/named.run";
+                severity dynamic;
+        };
+};
+
+#for $zone in $forward_zones
+zone "${zone}." {
+    type slave;
+    masters {
+        $bind_master;
+    };
+    file "$zone";
+};
+
+#end for
+#for $zone, $arpa in $reverse_zones
+zone "${arpa}." {
+    type slave;
+    masters {
+        $bind_master;
+    };
+    file "$zone";
+};
+
+#end for

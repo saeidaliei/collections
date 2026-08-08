@@ -1,0 +1,75 @@
+---
+dependency:
+  name: galaxy
+
+driver:
+  name: vagrant
+  provider:
+    name: libvirt
+    type: libvirt
+
+platforms:
+  - name: fedora-38-webserver
+    box: fedora/38-cloud-base
+    box_version: "38.20230413.1"
+    privileged: true
+    memory: 2048
+    cpus: 2
+    interfaces:
+      - auto_config: true
+        network_name: private_network
+        type: static
+        ip: "192.168.0.10"
+        guest: 80
+        host: 8080
+    provider_raw_config_args:
+      - "driver = 'kvm'"
+      - "uri = 'qemu:///system'"
+      - "cpu_mode = 'host-passthrough'"
+    instance_raw_config_args:
+      - "vm.box_check_update = false"
+    config_options:
+      ssh.keep_alive: true
+      ssh.remote_user: "vagrant"
+    groups:
+      - webservers
+
+provisioner:
+  name: ansible
+  log: true
+  connection_options:
+    ansible_ssh_user: vagrant
+    ansible_become: true
+    ansible_become_user: root
+  lint:
+    name: ansible-lint
+  inventory:
+    host_vars:
+      fedora38-webserver:
+        apache_or_nginx: "nginx"
+        nginx_package_name: "nginx"
+        nginx_service_name: "nginx"
+    group_vars:
+      webservers:
+        ansible_python_interpreter: "/usr/bin/python3"
+
+scenario:
+  name: fedora-38-libvirt
+  test_sequence:
+    - dependency
+    - cleanup
+    - destroy
+    - syntax
+    - create
+    - prepare
+    - converge
+    - idempotence
+    - verify
+    - cleanup
+    - destroy
+
+verifier:
+  name: testinfra
+  options:
+    sudo: true
+    v: 1

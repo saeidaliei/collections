@@ -1,0 +1,16 @@
+---
+- name: Install Tftp server
+  ansible.builtin.package:
+    name: tftp-server
+    state: latest
+
+- name: Create Tftp root directory
+  ansible.builtin.file:
+    path: "{{ tftpd_directory }}"
+    state: directory
+      
+- name: Copy Tftp service file
+  ansible.builtin.template:
+    src: templates/tftp.service.j2
+    dest: /usr/lib/systemd/system/tftp.service
+  notify: Reload and restart Tftp service

@@ -1,0 +1,19 @@
+---
+galaxy_info:
+  author: Saeid Aliei
+  description: Prepare a network boot environment
+  company: Area Science Park
+  role_name: netboot
+  namespace: orfeo
+  license: GPL-3.0-or-later
+  min_ansible_version: "2.1"
+  platforms:
+    - name: Fedora
+      versions:
+        - all
+  galaxy_tags:
+    - netboot
+    - pxeboot
+dependencies: []
+collections:
+  - community.libvirt

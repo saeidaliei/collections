@@ -1,0 +1,15 @@
+---
+cobbler_server_ip: "172.26.1.100"
+cobbler_server_password: "cobbler"
+
+manage_dhcp: true
+dhcp_subnet: "172.26.1.0"
+dhcp_subnet_mask: "255.255.255.0"
+dhcp_domain_name_servers: "172.26.1.100"
+dhcp_routers: "172.26.1.1"
+dhcp_dynamic_bootp: "172.26.1.100 172.26.1.254"
+dnsmasq_dhcp_range: "172.26.1.100,172.26.1.254"
+manage_dns: true
+named_servicenets: "172.26.0.0/24"
+manage_rsync: true
+
