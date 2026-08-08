@@ -1,0 +1,83 @@
+#!/usr/bin/env bash
+#
+# An attemp to make a unified interface for different package managers.
+#
+# TODO: pkg.conf
+# TODO: use file descriptor (fd) for reading different distro files
+# TODO: set the package manager backend (and distro) only once, also a CL arg to set it --set-pkgmgr
+# TODO: a utility to combine the relevant files into one minimal script
+# TODO: a better way for detecting package manager
+# TODO: pass backend specific args from frontend to backend
+# TODO: use of getopt for parsing args
+# TODO: after first detection of package manager, 
+# change this script to set the package manager globally,
+# to avoid detection in every run
+#
+
+CURDIR="$(dirname $0)"
+INCDIR="$CURDIR/include"
+source "$INCDIR/pacman.sh"
+
+function usage_message() {
+    echo "usage message"
+}
+
+function help_message() {
+    echo "help message"
+}
+
+function set_package_manager() {
+    echo "setting package manager to $1"
+}
+
+function detect_package_manager() {
+    file="/etc/os-release"
+    [ -f $file ] && distro=$(cat $file | grep -w "ID" | cut -d '=' -f 2) || distro="None"
+    [ "$distro" = "manjaro" ] && echo "pacman"
+}
+
+function source_file() {
+    PKGMGR="$(detect_package_manager)"
+    [ "$PKGMGR" = "pacman" ] && source "$INCDIR/pacman.sh"
+}
+
+function main() {
+    case "$1" in
+         "--update" | "-s" | "")
+            sync_mirrors
+            ;;
+        "--upgrade" | "-u")
+            upgrade_system
+            ;;
+        "--query" | "-q")
+            shift
+            query_package "$@"
+            ;;
+        "--make" | "-m")
+            shift
+            make_package "$@"
+            ;;
+        "--remove" | "-r")
+            shift
+            remove_package "$@"
+            ;;
+        "--purge" | "-p")
+            shift
+            purge_package "$@"
+            ;;
+        "--set-pkgmgr")
+            shift
+            set_package_manager "$@"
+            ;;
+        "--help" | "-h")
+            shift
+            help_message
+            ;;
+        *)
+            usage_message
+            ;;
+    esac
+}
+
+main "$@"
+
