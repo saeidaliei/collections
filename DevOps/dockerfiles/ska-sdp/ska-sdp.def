@@ -1,0 +1,57 @@
+Bootstrap: docker
+From: ubuntu:24.04
+Stage: spython-base
+
+%files
+packages.deb.txt /opt/packages.deb.txt
+%post
+
+SHELL ["/bin/bash", "-c"]
+
+cd /
+
+SPACK_BRANCH=releases/v0.23
+SPACK_ROOT=/opt/spack
+SPACK_ENV_NAME=sdp
+
+SPACK_CACHE_VERSION=v0.22.0
+SPACK_E4S_MIRROR=https://cache.e4s.io/24.11
+SPACK_E4S_MIRROR_NAME=E4S
+
+SPACK_ADD_CMD="spack -e ${SPACK_ENV_NAME} add"
+SPACK_CONCRETIZE_CMD="spack -e ${SPACK_ENV_NAME} concretize"
+SPACK_INSTALL_CMD="spack -e ${SPACK_ENV_NAME} install -j 4 --fail-fast"
+
+DEBIAN_FRONTEND=noninteractive apt-get update -y && apt-get upgrade -y
+xargs apt-get install -y < /opt/packages.deb.txt
+pipx ensurepath
+
+git clone --depth=2 --branch=$SPACK_BRANCH https://github.com/spack/spack.git $SPACK_ROOT
+PATH="/root/.local/bin:${SPACK_ROOT}/bin:${PATH}"
+SPACK_ROOT=$SPACK_ROOT
+spack compiler find
+
+spack mirror add $SPACK_CACHE_VERSION https://binaries.spack.io/$SPACK_CACHE_VERSION
+spack mirror add $SPACK_E4S_MIRROR_NAME $SPACK_E4S_MIRROR
+spack buildcache keys --install --trust
+
+git clone https://gitlab.com/ska-telescope/sdp/ska-sdp-spack.git $SPACK_ROOT/var/spack/repos/ska-sdp-spack
+spack repo add $SPACK_ROOT/var/spack/repos/ska-sdp-spack
+spack env create $SPACK_ENV_NAME
+
+$SPACK_ADD_CMD py-ska-sdp-batch-preprocess
+$SPACK_ADD_CMD py-ska-sdp-func-python
+$SPACK_ADD_CMD py-ska-sdp-datamodels
+$SPACK_ADD_CMD py-ska-sdp-func
+$SPACK_ADD_CMD py-ska-telmodel
+$SPACK_CONCRETIZE_CMD
+$SPACK_INSTALL_CMD
+%environment
+export PATH="/root/.local/bin:${SPACK_ROOT}/bin:${PATH}"
+export SPACK_ROOT=$SPACK_ROOT
+%runscript
+cd /
+exec /bin/bash "$@"
+%startscript
+cd /
+exec /bin/bash "$@"
