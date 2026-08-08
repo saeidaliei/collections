@@ -1,0 +1,5 @@
+include_directories(${logging_SOURCE_DIR}/inc)
+add_compile_options(-Wall -O3)
+add_executable(test.x test.c)
+target_link_libraries(test.x PRIVATE log)
+add_test(NAME TestLogger COMMAND ./test.x)
