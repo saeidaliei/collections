@@ -1,3 +1,0 @@
-### Scripts
-
-> Various helper scripts.
